@@ -29,7 +29,8 @@ def create_app(test_config=None):
 
     # Import models here so SQLAlchemy is aware of them before migrations
     # or ``create_all`` run. Students will flesh these out in ``models.py``.
-    import models  # noqa: F401
+    import models from models import User, Post
+   # noqa: F401
 
     @app.route("/")
     def index():
@@ -39,27 +40,57 @@ def create_app(test_config=None):
 
     @app.route("/users", methods=["GET", "POST"])
     def users():
-        """List or create users.
+         if request.method == "GET":
+            users = User.query.all()
+            return jsonify([u.to_dict() for u in users]), 200
+
+        if request.method == "POST":
+            data = request.get_json()
+            if not data or "username" not in data or "email" not in data:
+                return jsonify({"error": "Missing username or email"}), 400
+                
+            new_user = User (username=data[ "username"], email=data[ "email" ])
+            db. session. add (new_user) db.session.commit()
+            return jsonify (new_user.to_dict()),201
+
+
 
         TODO: Students should query ``User`` objects, serialize them to JSON,
         and handle incoming POST data to create new users.
         """
 
-        return (
-            jsonify({"message": "TODO: implement user listing/creation"}),
-            501,
-        )
 
     @app.route("/posts", methods=["GET", "POST"])
     def posts():
-        """List or create posts.
+        if request.method == "GET":
+          posts = Post.query.all()
+          return jsonify([p.to_dict() for p in posts]), 200
+        if request.method == "POST" :
+          data = request get_ json()
+          if not data or "title" not in data or "content" not in data or "user_id"
+               return isonifyl({"error": "Missing title, content or user_id"}),400
+ 
+ # Vérifier si user existe
+user = User.query.get (data["user_id"])
+if not user:
+    return jsonify({"error":"user not found"}),404
+
+ new_post = Post(
+     title=data["title"],
+     content=data[ "content" ],
+     user_id=data["user_id"]
+     )
+    db. session.add (new_post) 
+    db.session.commit()
+
+"""List or create posts.
 
         TODO: Students should query ``Post`` objects, include user data, and
         allow creating posts tied to a valid ``user_id``.
         """
 
         return (
-            jsonify({"message": "TODO: implement post listing/creation"}),
+            jsonify({new_post.to_dict()), 
             501,
         )
 
